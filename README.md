@@ -19,12 +19,13 @@ This project analyzes NYPD data to uncover trends and insights related to crime 
 
 The following CSV files are imported for analysis:
 
-- `nypd_complaint_data.csv`
+- `NYPD_Shooting_Incident_Data__Historic_csv`
 #### Data Tidying and Transformation
 
 - Removed unnecessary columns.
-- Transformed date columns into a single `date` column.
-
+- Created New Columns such as Day/Night
+- New columns for Day / Month / Year
+- fixed the object type of some variables such as occur_time and occur_data by using the lubridate mutate function
 #### Data Summary
 
 - Filtered out irrelevant observations.
