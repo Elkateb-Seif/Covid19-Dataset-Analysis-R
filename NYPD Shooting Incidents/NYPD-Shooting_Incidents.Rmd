@@ -153,7 +153,7 @@ ggplot(NYPD_Data, aes(x = Victim_Age)) +
 
 
 
-###4. Bar Plot: Number of Incidents by Day/Night
+### 4. Bar Plot: Number of Incidents by Day/Night
 
 ```{r number_incidents_daynight,include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
 # Bar plot for the number of incidents by day/night
@@ -169,7 +169,7 @@ ggplot(NYPD_Data, aes(x = Day_Night)) +
 **Again Most the shootings incidents happen at night which might not be surprising at all ** 
 
 
-###5. Pie Chart: Proportion of Incidents Resulting in Murder
+### 5. Pie Chart: Proportion of Incidents Resulting in Murder
 
 
 ```{r murder_success ,include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
@@ -221,7 +221,7 @@ ggplot(incidents_by_month_year, aes(x = factor(Month), y = factor(Year), fill = 
 
 
 
-###7. Bar Plot: Number of Incidents by Victim's Sex
+### 7. Bar Plot: Number of Incidents by Victim's Sex
 
 ```{r victem_sex, include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
 
@@ -231,8 +231,6 @@ ggplot(NYPD_Data, aes(x = Victim_Sex)) +
   labs(title = "Number of Shooting Incidents by Victim's Sex", x = "Victim's Sex", y = "Number of Incidents")
 ```
 
-These enhancements should make your visualizations more informative and visually appealing. Let me know if you need any further assistance!
-```
 
 **Most of the shootings victims are Males according to this visualization **
 
@@ -267,3 +265,7 @@ ggplot(incidents_over_time, aes(x = FULL_Date)) +
 **Im not from Us and in my country shooting incidents are less common so im initially i might not have been full aware of all the possible factors that could affect the likelihood of shooting incidents.And to mitigate that i tried to add alot of variables into my analysis and make to make it more efficient such as day , month , year and also focus on the victims age groups and their sex and try to utilize every variable available in my data frame to get better and more meaningful results **
 
 
+
+### Conclusion 
+
+**Analyzing the data is important because it help us improve government policies and identify how might be at risk and then minimize that risk so the data analysis of the dataset is cruicial for a better future and less incidents but this process is a never ending process and things keep changing , people keep changing so the data should always be analyzed , wrangled , visualized and after all of that strong and accurate models should be avilable to help us detect hotspots and trends and minimize risk for the society**
