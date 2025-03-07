@@ -1,0 +1,269 @@
+---
+title: "NYPD-Shooting_Incidents"
+author: "Seif Elkateb"
+date: "2025-03-04"
+output: html_document
+---
+
+
+## Goal Of the Data Analysis
+
+**This analysis explores the NYPD Shooting Incident Data to identify trends and patterns regarding gun shooting incident and help improve public safety**
+
+
+
+
+
+
+
+### Libraries That will be used 
+
+- tidyverse for data analaysis and manipulation/Visualization
+- lubridate for tibble mutation , date time modification, adding new columns ,etc
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+```
+
+## Importing The CSV File
+
+
+```{r data_import, include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+
+NYPD_Data= read_csv('./Data/NYPD_Shooting_Incident_Data__Historic_.csv')
+
+
+
+
+```
+
+
+
+## Data Tidying 
+
+- OCCUR_TIME is NUM , that needs to be modified by using lubridate package
+- OCCURDATE Is chr , that needs to be changed to the correct format also by lubridate package (mutate) method
+- some columns need to be renamed 
+- Also some columns are added to the data frame such as Day, Month,Year 
+- Another Function created to check whether the incident happened on day or night based on the time 
+
+
+
+
+
+
+
+
+### Function to check Day or Night
+
+```{r functions_definition,include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+check_day_night <- function(time) {
+  hour <- hour(time)
+  case_when(
+    hour >= 6 & hour < 18 ~ "Day",
+    TRUE ~ "Night"
+  )
+}
+
+```
+
+
+
+```{r data_tidying , include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+
+
+# selecting the nypd columns for analysis and renaming some columns
+
+NYPD_Data<-NYPD_Data %>% select(c(VIC_AGE_GROUP,VIC_SEX,VIC_RACE,OCCUR_DATE,OCCUR_TIME,PRECINCT,BORO,
+ STATISTICAL_MURDER_FLAG))%>% rename(Victim_Age='VIC_AGE_GROUP',Victim_Race='VIC_RACE',Victim_Sex='VIC_SEX',District='BORO',Murder='STATISTICAL_MURDER_FLAG')
+
+
+# FIxing the date and time obj and adding new columns for better data analysis
+
+NYPD_Data<-NYPD_Data%>%mutate(FULL_Date=mdy(OCCUR_DATE),TIME=hms(OCCUR_TIME),Day=day(FULL_Date),Month=month(FULL_Date),Year=year(FULL_Date),Day_Night=check_day_night(TIME))
+
+
+
+
+
+```
+
+### summary of the NYPD Tibble After Data transformation and Tidying
+
+```{r NYPD_DATE}
+summary(NYPD_Data)
+```
+
+### Data Visualization And Analysis
+
+### 1. Bar Plot: Number of Incidents by Borough
+
+
+```{r bar_plot, include=TRUE,echo=TRUE}
+
+#Bar Plot: Number of Incidents by Borough 
+
+ggplot(NYPD_Data, aes(x = District)) +
+  geom_bar(fill = "blue") +
+  theme_minimal() +
+  labs(title = "Number of Shooting Incidents by Borough", x = "Borough", y = "Number of Incidents")
+
+```
+
+**Based on that we can notice that BROOKLYIN has the highst number of shootig incidents !!!**
+
+### Line Plot: Number of Incidents Over Time
+
+
+```{r number_of_incidents_by_time,include=TRUE,echo=TRUE}
+# Summarize the number of incidents by date
+incidents_over_time <- NYPD_Data %>%
+  group_by(FULL_Date) %>%
+  summarize(num_incidents = n()) %>%
+  ungroup()
+
+# Line plot for the number of incidents over time
+ggplot(incidents_over_time, aes(x = FULL_Date, y = num_incidents)) +
+  geom_line(color = "purple") +
+  theme_minimal() +
+  labs(title = "Number of Shooting Incidents Over Time", x = "Date", y = "Number of Incidents")
+```
+**Based on that we can notice that 2020 year had the highest number of shootings  which might be logical since Covid19 pandemic started that year and alot of people were dealing with mental health issues which might be a factor when interpret this visualization**
+
+
+
+# Bar plot for the number of incidents by victim's age group
+
+
+```{r incident_by_victim_age,include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+ggplot(NYPD_Data, aes(x = Victim_Age)) +
+  geom_bar(fill = "green") +
+  theme_minimal() +
+  labs(title = "Number of Shooting Incidents by Victim's Age Group", x = "Victim's Age Group", y = "Number of Incidents") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+**Based on that we can conclude that ages from 25-44 Were the most common targets for shootings incidents followed by 18-24**
+
+**65+ Age group had the lowest number of shooting incidents among other all Age Groups !!**
+
+
+
+
+###4. Bar Plot: Number of Incidents by Day/Night
+
+```{r number_incidents_daynight,include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+# Bar plot for the number of incidents by day/night
+ggplot(NYPD_Data, aes(x = Day_Night)) +
+  geom_bar(fill = "purple") +
+  theme_minimal() +
+  labs(title = "Number of Shooting Incidents by Day/Night", x = "Time of Day", y = "Number of Incidents")
+
+
+
+```
+
+**Again Most the shootings incidents happen at night which might not be surprising at all ** 
+
+
+###5. Pie Chart: Proportion of Incidents Resulting in Murder
+
+
+```{r murder_success ,include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+
+# Summarize the number of incidents resulting in murder
+murder_summary <- NYPD_Data %>%
+  group_by(Murder) %>%
+  summarize(count = n()) %>%
+  ungroup()
+
+# Pie chart for the proportion of incidents resulting in murder
+ggplot(murder_summary, aes(x = "", y = count, fill = Murder)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  theme_minimal() +
+  labs(title = "Proportion of Shooting Incidents Resulting in Murder", x = "", y = "") +
+  theme(axis.text.x = element_blank(), axis.ticks = element_blank())
+
+
+```
+**as we can see about 15-20% of the shootings incidents result in Murder** 
+
+### 6. Heatmap: Incidents by Month and Year
+
+```{r incident_by_month_year,include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+
+# Summarize the number of incidents by month and year
+incidents_by_month_year <- NYPD_Data %>%
+  group_by(Year, Month) %>%
+  summarize(num_incidents = n()) %>%
+  ungroup()
+
+# Create a heatmap
+ggplot(incidents_by_month_year, aes(x = factor(Month), y = factor(Year), fill = num_incidents)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_minimal() +
+  labs(title = "Heatmap of Shooting Incidents by Month and Year", x = "Month", y = "Year", fill = "Number of Incidents")
+
+
+
+```
+**we can see that Summer months from june-September are when most of the shootings incidents occur**
+**we can also notice that in 2020 months 7/8 had very high number of shooting incidents (that was after lookdown when most people were staying and working from home most of the time )**
+
+
+
+
+
+
+
+###7. Bar Plot: Number of Incidents by Victim's Sex
+
+```{r victem_sex, include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+
+ggplot(NYPD_Data, aes(x = Victim_Sex)) +
+  geom_bar(fill = "cyan") +
+  theme_minimal() +
+  labs(title = "Number of Shooting Incidents by Victim's Sex", x = "Victim's Sex", y = "Number of Incidents")
+```
+
+These enhancements should make your visualizations more informative and visually appealing. Let me know if you need any further assistance!
+```
+
+**Most of the shootings victims are Males according to this visualization **
+
+
+### Data Modeling 
+
+
+
+```{r data_modeling ,include=TRUE,echo=TRUE,message=FALSE,warning=FALSE}
+model <- lm(num_incidents ~ as.numeric(FULL_Date), data = incidents_over_time)
+
+# Predict using the model
+incidents_over_time <- incidents_over_time %>%
+  mutate(predicted_incidents = predict(model, newdata = incidents_over_time))
+
+# Plot actual vs predicted data
+ggplot(incidents_over_time, aes(x = FULL_Date)) +
+  geom_line(aes(y = num_incidents, color = "Actual Incidents")) +
+  geom_line(aes(y = predicted_incidents, color = "Predicted Incidents")) +
+  theme_minimal() +
+  labs(title = "Actual vs Predicted Number of Shooting Incidents Over Time", x = "Date", y = "Number of Incidents") +
+  scale_color_manual(values = c("Actual Incidents" = "purple", "Predicted Incidents" = "orange")) +
+  theme(legend.title = element_blank())
+
+```
+**as we can see the model actually predicts alot of values close to the range of incidents , however there are alot of outliers and specific years where shooting incidents increased significantly**
+
+
+
+### Bias Identification 
+
+**Im not from Us and in my country shooting incidents are less common so im initially i might not have been full aware of all the possible factors that could affect the likelihood of shooting incidents.And to mitigate that i tried to add alot of variables into my analysis and make to make it more efficient such as day , month , year and also focus on the victims age groups and their sex and try to utilize every variable available in my data frame to get better and more meaningful results **
+
+
