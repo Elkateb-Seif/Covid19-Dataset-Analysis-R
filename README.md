@@ -20,13 +20,10 @@ This project analyzes NYPD data to uncover trends and insights related to crime 
 The following CSV files are imported for analysis:
 
 - `nypd_complaint_data.csv`
-- `nypd_arrest_data.csv`
-
 #### Data Tidying and Transformation
 
 - Removed unnecessary columns.
 - Transformed date columns into a single `date` column.
-- Created new columns for analysis, such as `crime_type` and `arrest_count`.
 
 #### Data Summary
 
